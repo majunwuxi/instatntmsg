@@ -9,7 +9,7 @@ interface TradingSignalFormProps {
 
 export default function TradingSignalForm({ user }: TradingSignalFormProps) {
   const [symbol, setSymbol] = useState<'MES' | 'N225MC'>('MES');
-  const [action, setAction] = useState<'BUY' | 'SELL' | 'FLAT'>('BUY');
+  const [action, setAction] = useState<'BUY' | 'SELL' | 'FLAT'>('FLAT');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error'>('success');
