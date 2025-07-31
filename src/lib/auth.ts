@@ -21,13 +21,13 @@ declare global {
 }
 
 // 检查是否使用数据库
-const useDatabase = () => {
+const shouldUseDatabase = () => {
   return !!(process.env.POSTGRES_URL || process.env.DATABASE_URL);
 };
 
 // 初始化数据库（如果配置了的话）
 async function ensureDatabaseInitialized() {
-  if (useDatabase() && !global.__dbInitialized) {
+  if (shouldUseDatabase() && !global.__dbInitialized) {
     try {
       await initDB();
       global.__dbInitialized = true;
@@ -36,7 +36,7 @@ async function ensureDatabaseInitialized() {
       // 回退到内存存储
       initMemoryStorage();
     }
-  } else if (!useDatabase()) {
+  } else if (!shouldUseDatabase()) {
     initMemoryStorage();
   }
 }
@@ -146,7 +146,7 @@ export async function sendVerificationEmail(email: string): Promise<{ success: b
 export async function registerUser(data: RegisterData): Promise<{ success: boolean; message: string; user?: User; needsVerification?: boolean }> {
   await ensureDatabaseInitialized();
   
-  if (useDatabase()) {
+  if (shouldUseDatabase()) {
     try {
       // 检查用户名是否已存在
       const existingUsername = await sql`
@@ -235,7 +235,7 @@ export async function registerUser(data: RegisterData): Promise<{ success: boole
 export async function loginUser(data: LoginData): Promise<{ success: boolean; message: string; user?: User }> {
   await ensureDatabaseInitialized();
   
-  if (useDatabase()) {
+  if (shouldUseDatabase()) {
     try {
       const result = await sql`
         SELECT * FROM users WHERE username = ${data.username} LIMIT 1
@@ -306,7 +306,7 @@ export async function loginUser(data: LoginData): Promise<{ success: boolean; me
 export async function verifyEmail(token: string): Promise<{ success: boolean; message: string; user?: User }> {
   await ensureDatabaseInitialized();
   
-  if (useDatabase()) {
+  if (shouldUseDatabase()) {
     try {
       const result = await sql`
         SELECT * FROM users WHERE email_verification_token = ${token} LIMIT 1
@@ -371,7 +371,7 @@ export async function verifyEmail(token: string): Promise<{ success: boolean; me
 export async function getUserByEmail(email: string): Promise<User | undefined> {
   await ensureDatabaseInitialized();
   
-  if (useDatabase()) {
+  if (shouldUseDatabase()) {
     try {
       const result = await sql`
         SELECT * FROM users WHERE email = ${email} LIMIT 1
@@ -420,7 +420,7 @@ export async function initiatePasswordReset(email: string): Promise<{ success: b
   const resetToken = crypto.randomUUID();
   const resetExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24小时后过期
 
-  if (useDatabase()) {
+  if (shouldUseDatabase()) {
     try {
       await sql`
         UPDATE users 
@@ -444,7 +444,7 @@ export async function initiatePasswordReset(email: string): Promise<{ success: b
 export async function resetPassword(token: string, newPassword: string): Promise<{ success: boolean; message: string; user?: User }> {
   await ensureDatabaseInitialized();
   
-  if (useDatabase()) {
+  if (shouldUseDatabase()) {
     try {
       const result = await sql`
         SELECT * FROM users 
@@ -510,7 +510,7 @@ export async function resetPassword(token: string, newPassword: string): Promise
 export async function getUserByResetToken(token: string): Promise<User | undefined> {
   await ensureDatabaseInitialized();
   
-  if (useDatabase()) {
+  if (shouldUseDatabase()) {
     try {
       const result = await sql`
         SELECT * FROM users 
@@ -549,7 +549,7 @@ export async function getUserByResetToken(token: string): Promise<User | undefin
 export async function addLog(userId: string, action: string, details: string): Promise<void> {
   await ensureDatabaseInitialized();
   
-  if (useDatabase()) {
+  if (shouldUseDatabase()) {
     try {
       await sql`
         INSERT INTO logs (user_id, action, details, timestamp)
@@ -573,7 +573,7 @@ export async function addLog(userId: string, action: string, details: string): P
 export async function getUserLogs(userId: string) {
   await ensureDatabaseInitialized();
   
-  if (useDatabase()) {
+  if (shouldUseDatabase()) {
     try {
       const result = await sql`
         SELECT * FROM logs WHERE user_id = ${userId} ORDER BY timestamp DESC
@@ -599,7 +599,7 @@ export async function getUserLogs(userId: string) {
 export async function getAllLogs() {
   await ensureDatabaseInitialized();
   
-  if (useDatabase()) {
+  if (shouldUseDatabase()) {
     try {
       const result = await sql`
         SELECT * FROM logs ORDER BY timestamp DESC
@@ -631,7 +631,7 @@ export async function updateUserWebhookConfig(userId: string, config: WebhookCon
     return { success: false, message: 'webhook URL格式无效' };
   }
 
-  if (useDatabase()) {
+  if (shouldUseDatabase()) {
     try {
       await sql`
         UPDATE users 
@@ -672,7 +672,7 @@ export async function updateUserWebhookConfig(userId: string, config: WebhookCon
 export async function getUserWebhookConfig(userId: string): Promise<WebhookConfig | null> {
   await ensureDatabaseInitialized();
   
-  if (useDatabase()) {
+  if (shouldUseDatabase()) {
     try {
       const result = await sql`
         SELECT webhook_url, webhook_token, webhook_active 
@@ -704,7 +704,7 @@ export async function getUserWebhookConfig(userId: string): Promise<WebhookConfi
 export async function getUserById(userId: string): Promise<User | undefined> {
   await ensureDatabaseInitialized();
   
-  if (useDatabase()) {
+  if (shouldUseDatabase()) {
     try {
       const result = await sql`
         SELECT * FROM users WHERE id = ${userId} LIMIT 1
@@ -747,7 +747,7 @@ export async function getUserById(userId: string): Promise<User | undefined> {
 export async function getAllUsers(): Promise<User[]> {
   await ensureDatabaseInitialized();
   
-  if (useDatabase()) {
+  if (shouldUseDatabase()) {
     try {
       const result = await sql`
         SELECT * FROM users ORDER BY created_at DESC
@@ -790,7 +790,7 @@ export async function toggleUserStatus(adminId: string, targetUserId: string): P
     return { success: false, message: '权限不足' };
   }
 
-  if (useDatabase()) {
+  if (shouldUseDatabase()) {
     try {
       const result = await sql`
         SELECT * FROM users WHERE id = ${targetUserId} LIMIT 1
@@ -854,7 +854,7 @@ export async function deleteUser(adminId: string, targetUserId: string): Promise
     return { success: false, message: '权限不足' };
   }
 
-  if (useDatabase()) {
+  if (shouldUseDatabase()) {
     try {
       const result = await sql`
         SELECT * FROM users WHERE id = ${targetUserId} LIMIT 1
