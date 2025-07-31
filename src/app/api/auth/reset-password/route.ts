@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = resetPassword(token, newPassword);
+    const result = await resetPassword(token, newPassword);
     
     if (result.success) {
       return NextResponse.json(result);
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const user = getUserByResetToken(token);
+    const user = await getUserByResetToken(token);
     
     if (user) {
       return NextResponse.json({

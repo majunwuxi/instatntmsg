@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = registerUser({ username, email, password });
+    const result = await registerUser({ username, email, password });
     
     if (result.success && result.needsVerification) {
       // 直接调用发送验证邮件函数

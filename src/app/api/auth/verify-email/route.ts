@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const result = verifyEmail(token);
+    const result = await verifyEmail(token);
     
     if (result.success) {
       // 重定向到登录页面，带有成功消息

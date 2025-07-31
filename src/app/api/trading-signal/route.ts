@@ -26,10 +26,10 @@ export async function POST(request: NextRequest) {
     };
 
     // 获取用户的webhook配置
-    const userWebhookConfig = getUserWebhookConfig(userId);
+    const userWebhookConfig = await getUserWebhookConfig(userId);
 
     if (!userWebhookConfig) {
-      addLog(userId, '发送失败', '用户未配置webhook');
+      await addLog(userId, '发送失败', '用户未配置webhook');
       return NextResponse.json(
         { success: false, message: '请先配置您的webhook设置' },
         { status: 400 }
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!userWebhookConfig.isActive) {
-      addLog(userId, '发送失败', 'Webhook配置已禁用');
+      await addLog(userId, '发送失败', 'Webhook配置已禁用');
       return NextResponse.json(
         { success: false, message: 'Webhook配置已禁用，请在设置中启用' },
         { status: 400 }
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     const webhookUrl = userWebhookConfig.url;
     
     if (response.ok) {
-      addLog(userId, '交易信号发送', `成功发送到 ${webhookUrl} - ${signalDetails}`);
+      await addLog(userId, '交易信号发送', `成功发送到 ${webhookUrl} - ${signalDetails}`);
       return NextResponse.json({
         success: true,
         message: '交易信号发送成功',
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       });
     } else {
       const errorText = await response.text();
-      addLog(userId, '发送失败', `发送到 ${webhookUrl} 失败: ${response.status} - ${errorText}, 信号: ${signalDetails}`);
+      await addLog(userId, '发送失败', `发送到 ${webhookUrl} 失败: ${response.status} - ${errorText}, 信号: ${signalDetails}`);
       return NextResponse.json(
         { success: false, message: `发送失败: ${response.status}` },
         { status: 500 }
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     if (request.body) {
       try {
         const body = await request.json();
-        addLog(body.userId || 'unknown', '发送失败', `网络错误: ${errorMessage}`);
+        await addLog(body.userId || 'unknown', '发送失败', `网络错误: ${errorMessage}`);
       } catch {}
     }
     

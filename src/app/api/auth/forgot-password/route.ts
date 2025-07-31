@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = initiatePasswordReset(email);
+    const result = await initiatePasswordReset(email);
     
     if (!result.success) {
       return NextResponse.json(result, { status: 404 });

@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const admin = getUserById(adminId);
+    const admin = await getUserById(adminId);
     if (!admin || !admin.isAdmin) {
       return NextResponse.json(
         { success: false, message: '权限不足' },
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const users = getAllUsers();
+    const users = await getAllUsers();
     
     return NextResponse.json({
       success: true,
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const admin = getUserById(adminId);
+    const admin = await getUserById(adminId);
     if (!admin || !admin.isAdmin) {
       return NextResponse.json(
         { success: false, message: '权限不足' },
@@ -67,10 +67,10 @@ export async function POST(request: NextRequest) {
     
     switch (action) {
       case 'toggle':
-        result = toggleUserStatus(adminId, targetUserId);
+        result = await toggleUserStatus(adminId, targetUserId);
         break;
       case 'delete':
-        result = deleteUser(adminId, targetUserId);
+        result = await deleteUser(adminId, targetUserId);
         break;
       default:
         return NextResponse.json(

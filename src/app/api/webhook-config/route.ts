@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const config = getUserWebhookConfig(userId);
+    const config = await getUserWebhookConfig(userId);
     
     return NextResponse.json({
       success: true,
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = updateUserWebhookConfig(userId, {
+    const result = await updateUserWebhookConfig(userId, {
       url,
       token: token || undefined,
       isActive: isActive !== false // 默认为true
