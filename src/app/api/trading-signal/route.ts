@@ -78,16 +78,10 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : '未知错误';
-    
-    if (request.body) {
-      try {
-        const body = await request.json();
-        await addLog(body.userId || 'unknown', '发送失败', `网络错误: ${errorMessage}`);
-      } catch {}
-    }
+    console.error('Trading signal API error:', error);
     
     return NextResponse.json(
-      { success: false, message: '网络错误，请重试' },
+      { success: false, message: '服务器错误，请重试' },
       { status: 500 }
     );
   }

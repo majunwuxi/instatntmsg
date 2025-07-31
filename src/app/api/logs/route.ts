@@ -7,10 +7,10 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get('userId');
 
     if (userId) {
-      const logs = getUserLogs(userId);
+      const logs = await getUserLogs(userId);
       return NextResponse.json({ success: true, logs });
     } else {
-      const logs = getAllLogs();
+      const logs = await getAllLogs();
       return NextResponse.json({ success: true, logs });
     }
   } catch (error) {
