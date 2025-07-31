@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface LogEntry {
   userId: string;
@@ -18,7 +18,7 @@ export default function LogsViewer({ userId }: LogsViewerProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     setIsLoading(true);
     setError('');
 
@@ -40,11 +40,11 @@ export default function LogsViewer({ userId }: LogsViewerProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
     fetchLogs();
-  }, [userId]);
+  }, [fetchLogs]);
 
   const formatTimestamp = (timestamp: Date) => {
     return new Date(timestamp).toLocaleString('zh-CN', {

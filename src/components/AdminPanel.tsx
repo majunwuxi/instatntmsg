@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { User } from '@/types';
 
 interface AdminPanelProps {
@@ -25,7 +25,7 @@ export default function AdminPanel({ admin }: AdminPanelProps) {
   const [activeTab, setActiveTab] = useState<'users' | 'email'>('users');
 
   // 加载用户列表
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch(`/api/admin/users?adminId=${admin.id}`);
@@ -43,13 +43,13 @@ export default function AdminPanel({ admin }: AdminPanelProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [admin.id]);
 
   useEffect(() => {
     if (activeTab === 'users') {
       loadUsers();
     }
-  }, [admin.id, activeTab]);
+  }, [activeTab, loadUsers]);
 
   const handleUserAction = async (action: 'toggle' | 'delete', targetUserId: string) => {
     if (action === 'delete' && !confirm('确定要删除这个用户吗？此操作不可恢复。')) {
