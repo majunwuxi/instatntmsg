@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       headers,
       body: JSON.stringify(webhookData),
+      signal: AbortSignal.timeout(120000), // 120秒超时
     });
 
     const signalDetails = `标的: ${symbol}, 动作: ${action}, 价格: ${price}`;
@@ -80,8 +81,20 @@ export async function POST(request: NextRequest) {
     const errorMessage = error instanceof Error ? error.message : '未知错误';
     console.error('Trading signal API error:', error);
     
+    // 检查是否为超时错误
+    const isTimeout = error instanceof Error && error.name === 'TimeoutError';
+    const logDetails = isTimeout 
+      ? `发送超时（120秒）: ${errorMessage}, 信号: ${body.symbol}, 动作: ${body.action}, 价格: ${body.price}`
+      : `发送异常: ${errorMessage}, 信号: ${body.symbol}, 动作: ${body.action}, 价格: ${body.price}`;
+    
+    await addLog(body.userId, '发送失败', logDetails);
+    
+    const message = isTimeout 
+      ? '发送超时，接收端处理时间过长' 
+      : '网络错误，请重试';
+    
     return NextResponse.json(
-      { success: false, message: '服务器错误，请重试' },
+      { success: false, message },
       { status: 500 }
     );
   }
