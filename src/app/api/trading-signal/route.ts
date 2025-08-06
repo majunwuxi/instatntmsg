@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { addLog, getUserWebhookConfig } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
+  let body: any;
   try {
-    const body = await request.json();
+    body = await request.json();
     const { userId, symbol, action, price } = body;
 
     if (!userId || !symbol || !action || !price) {
@@ -84,10 +85,12 @@ export async function POST(request: NextRequest) {
     // 检查是否为超时错误
     const isTimeout = error instanceof Error && error.name === 'TimeoutError';
     const logDetails = isTimeout 
-      ? `发送超时（120秒）: ${errorMessage}, 信号: ${body.symbol}, 动作: ${body.action}, 价格: ${body.price}`
-      : `发送异常: ${errorMessage}, 信号: ${body.symbol}, 动作: ${body.action}, 价格: ${body.price}`;
+      ? `发送超时（120秒）: ${errorMessage}${body ? `, 信号: ${body.symbol}, 动作: ${body.action}, 价格: ${body.price}` : ''}`
+      : `发送异常: ${errorMessage}${body ? `, 信号: ${body.symbol}, 动作: ${body.action}, 价格: ${body.price}` : ''}`;
     
-    await addLog(body.userId, '发送失败', logDetails);
+    if (body?.userId) {
+      await addLog(body.userId, '发送失败', logDetails);
+    }
     
     const message = isTimeout 
       ? '发送超时，接收端处理时间过长' 
